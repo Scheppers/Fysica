@@ -11,3 +11,15 @@
 .mission-choice small{display:block;margin-top:7px;color:#c2d0d5}.mission-choice.selected,.level-choice.selected{outline:2px solid #e8bd70;background:#294c5e}
 .level-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}.level-choice{text-align:center;padding:10px 1px}
 @media(max-width:760px){.card .art{height:125px}.level-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+
+/* v0.4: echte kaarten in de vijf missieveldjes */
+.slots{grid-template-columns:repeat(auto-fit,minmax(155px,1fr));align-items:stretch;gap:12px}
+.slot{min-height:300px;display:flex;flex-direction:column;align-items:stretch;padding:6px;border:1px dashed #d7b87988;background:#0c2434}
+.slot.occupied{border:0;background:transparent;padding:0}
+.slot.occupied .card{height:100%;min-height:315px;text-align:left}
+.slot.occupied .card .art{height:125px}
+.slot.occupied .card .effect{font-size:11px}
+.slot.occupied .card .stats{font-size:14px}
+.slot.occupied .card .unplace-button{background:#294e62;color:#f9e7c3;border:1px solid #d0ab64;padding:8px;margin-top:auto;width:100%}
+.slot.empty{justify-content:center;align-items:center;color:#b9c9d1}
+@media(max-width:760px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}.slot.occupied .card .art{height:105px}}
