@@ -9,30 +9,55 @@ function showWorkspace(html){$('workspace').innerHTML=html;$('workspace').classL
 function closeWorkspace(){$('workspace').classList.add('hidden');$('workspace').innerHTML='';attempt=null}
 function showError(e){showWorkspace(`<h2>Er ging iets mis</h2><p class="error">${esc(e.message||e)}</p><button class="secondary" id="back">Terug naar het labo</button>`);$('back').onclick=closeWorkspace}
 async function loadProfile(){if(!user)return;const {data,error}=await db.from('profiles').select('username,role,xp,coins,equipped_skin').eq('id',user.id).single();if(error)throw Error(error.message);profile=data;const name=esc(data.username||user.email?.split('@')[0]||'Speler');$('account').innerHTML=`<strong>${name}</strong> · 🪙 ${Number(data.coins||0)} LabCoins <button id="logout">Uitloggen</button>`;$('logout').onclick=()=>db.auth.signOut();const wallet=$('sidebar-wallet');if(wallet)wallet.innerHTML=`<strong>${Number(data.coins||0)}</strong><small>LABCOINS</small>`;const skin=String(data.equipped_skin||'starter').replace(/[^a-z0-9_-]/gi,'');const known=['brass','cosmic','crystal','master','neon','starter','olympiade-og'];const labels={starter:'Professor Proton',brass:'Meth Maker',crystal:'Chemistry Chick',neon:'Luie Laborant',cosmic:'Analytische Alchemist',master:'Moleculaire Mia','olympiade-og':'Olympiade OG'};$('skin').innerHTML=`<div class="avatar">${known.includes(skin)?`<img src="assets/avatars/${skin}.webp" alt="${esc(labels[skin])}">`:'👤'}</div><div class="skin-copy"><small>Huidige skin</small><strong>${esc(labels[skin]||skin)}</strong></div>`;$('teacher').classList.toggle('hidden',data.role!=='teacher');if(data.role==='teacher')await renderTeacher();}
-async function openSkinShop(){
+function closeSkinShop(){
+ const modal=$('skin-modal');modal.classList.add('hidden');document.body.classList.remove('skin-modal-open');
+ if(window.skinModalPreviousFocus?.isConnected)window.skinModalPreviousFocus.focus();
+}
+window.skinModalPreviousFocus=null;
+$('skin-modal-close').onclick=closeSkinShop;
+$('skin-modal').addEventListener('click',e=>{if(e.target===$('skin-modal'))closeSkinShop()});
+document.addEventListener('keydown',e=>{
+ if($('skin-modal').classList.contains('hidden'))return;
+ if(e.key==='Escape'){e.preventDefault();closeSkinShop();return}
+ if(e.key==='Tab'){
+  const nodes=[...$('skin-modal').querySelectorAll('button:not(:disabled),a[href],input:not(:disabled)')];
+  if(!nodes.length)return;
+  if(e.shiftKey&&document.activeElement===nodes[0]){e.preventDefault();nodes[nodes.length-1].focus()}
+  else if(!e.shiftKey&&document.activeElement===nodes[nodes.length-1]){e.preventDefault();nodes[0].focus()}
+ }
+});
+async function openSkinShop(refresh=false){
  if(!user){msg('Log eerst in om de skinwinkel te openen.');return;}
+ const modal=$('skin-modal'),content=$('skin-modal-content');
+ if(!refresh)window.skinModalPreviousFocus=document.activeElement;
+ modal.classList.remove('hidden');document.body.classList.add('skin-modal-open');
+ if(!refresh)$('skin-modal-close').focus();
+ content.innerHTML='<p>Skins laden…</p>';
  try{
   const [{data:catalog,error:ce},{data:owned,error:oe}]=await Promise.all([
-    db.from('skin_catalog').select('id,name,price,description').order('price'),
-    db.from('user_skins').select('skin_id').eq('user_id',user.id)
+   db.from('skin_catalog').select('id,name,price,description').order('price'),
+   db.from('user_skins').select('skin_id').eq('user_id',user.id)
   ]);
   if(ce||oe)throw Error((ce||oe).message);
   const mine=new Set((owned||[]).map(x=>x.skin_id));
   const known=['brass','cosmic','crystal','master','neon','starter','olympiade-og'];
   const labels={starter:'Professor Proton',brass:'Meth Maker',crystal:'Chemistry Chick',neon:'Luie Laborant',cosmic:'Analytische Alchemist',master:'Moleculaire Mia','olympiade-og':'Olympiade OG'};
-  const cards=(catalog||[]).map(c=>{
-    const special=c.id==='olympiade-og',equipped=profile.equipped_skin===c.id,has=mine.has(c.id);
-    const label=equipped?'✓ In gebruik':has?'Draag deze skin':special?'Alleen via leerkracht':`Koop voor ${Number(c.price)} LabCoins`;
-    const disabled=equipped||(special&&!has)||(!has&&Number(profile.coins)<Number(c.price));
-    const image=known.includes(c.id)?`<img src="assets/avatars/${c.id}.webp" alt="">`:'';
-    return `<article class="skin-shop-card">${image}<strong>${esc(labels[c.id]||c.name)}</strong><small>${esc(c.description)}</small><button type="button" data-skin-id="${esc(c.id)}" data-skin-action="${has?'equip':'buy'}" ${disabled?'disabled':''}>${esc(label)}</button></article>`;
+  const order={starter:0,brass:1,crystal:2,neon:3,cosmic:4,master:5,'olympiade-og':6};
+  const cards=[...(catalog||[])].sort((a,b)=>(order[a.id]??100)-(order[b.id]??100)).map(c=>{
+   const special=c.id==='olympiade-og',equipped=profile.equipped_skin===c.id,has=mine.has(c.id);
+   const label=equipped?'✓ In gebruik':has?'Draag deze skin':special?'Alleen via leerkracht':`Koop voor ${Number(c.price)} LabCoins`;
+   const disabled=equipped||(special&&!has)||(!has&&Number(profile.coins)<Number(c.price));
+   const image=known.includes(c.id)?`<img src="assets/avatars/${c.id}.webp" alt="">`:'';
+   const price=special?'👑 Speciale skin':Number(c.price)===0?'Gratis startskin':`🪙 ${Number(c.price)} LabCoins`;
+   return `<article class="skin-shop-card ${special?'special':''} ${equipped?'equipped':''}"><div class="skin-card-head"><div class="skin-card-avatar">${image}</div><div><strong>${esc(labels[c.id]||c.name)}</strong><span class="skin-card-price">${price}</span></div></div><p>${esc(c.description||'')}</p>${special&&!has?'<p class="skin-card-note">Deze skin kan niet worden gekocht. Je leerkracht kan ze toekennen.</p>':''}<button type="button" data-skin-id="${esc(c.id)}" data-skin-action="${has?'equip':'buy'}" ${disabled?'disabled':''}>${esc(label)}</button></article>`;
   }).join('');
-  showWorkspace(`<h2>Skinwinkel · Wetenschapsacademie</h2><p>Dezelfde skins en LabCoins als in Chemie. Speciale skins worden door je leerkracht toegekend.</p><div class="skin-shop-grid">${cards}</div><button class="secondary" id="skin-shop-close">Sluiten</button>`);
-  $('skin-shop-close').onclick=closeWorkspace;
-  $('workspace').querySelectorAll('[data-skin-id]').forEach(b=>b.onclick=async()=>{
-    b.disabled=true;try{await rpc(b.dataset.skinAction==='equip'?'equip_skin':'buy_skin',{p_skin_id:b.dataset.skinId});await loadProfile();await openSkinShop()}catch(e){showError(e)}
+  content.innerHTML=`<small class="skin-modal-eyebrow">WETENSCHAPSACADEMIE</small><h2 id="skin-modal-title">🛍️ De skinwinkel</h2><p>Kies een wetenschappersskin voor Chemie en Fysica. Skins geven geen spelvoordeel. Je saldo: <strong>${Number(profile.coins)} LabCoins</strong>.</p><div class="skin-shop-grid">${cards}</div><p id="skin-modal-feedback" role="status" aria-live="polite"></p>`;
+  content.querySelectorAll('[data-skin-id]').forEach(b=>b.onclick=async()=>{
+   b.disabled=true;
+   try{await rpc(b.dataset.skinAction==='equip'?'equip_skin':'buy_skin',{p_skin_id:b.dataset.skinId});await loadProfile();await openSkinShop(true)}
+   catch(e){$('skin-modal-feedback').textContent=e.message||String(e);b.disabled=false}
   });
- }catch(e){showError(e)}
+ }catch(e){content.innerHTML=`<h2 id="skin-modal-title">Skinwinkel</h2><p class="error">${esc(e.message||e)}</p>`}
 }
 $('open-skin-shop').onclick=openSkinShop;
 async function refreshProgress(){if(!user)return;try{const rows=await Promise.all(Object.keys(eras).map(id=>rpc('physics_get_progress',{p_level:id})));const done=rows.filter(ps=>ps.filter(p=>p.active).length>0&&ps.filter(p=>p.active).every(p=>Number(p.completions)>0)).length;$('progress-text').textContent=`${done} van 4 levels voltooid`;$('progress-fill').style.width=`${done*25}%`;}catch(e){console.warn('Voortgang kon niet worden geladen:',e.message)}}
