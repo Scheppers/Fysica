@@ -58,3 +58,36 @@ label{color:#314b57}input,textarea,select{background:#fff;color:#203849;border:1
 footer{color:#687c88}
 @media(max-width:1050px){.levels{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.top{align-items:flex-start}.header-side{width:100%;justify-content:space-between}.progress-wrap{width:160px}.levels{grid-template-columns:1fr 1fr;gap:8px;padding:14px 10px 4px}.levels button{padding:8px;grid-template-columns:32px 1fr;min-height:76px}.level-number{height:35px;font-size:1.1rem}.level-copy b{font-size:.72rem}.level-copy small{font-size:.66rem}.hotspot{width:58px;min-height:52px}.hotspot .physics-puzzle-icon{width:37px;height:37px}.hotspot .physics-puzzle-icon img{width:23px;height:23px}.hotspot small{font-size:8px}}
+
+/* v0.6: rechterzijbalk in de visuele stijl van het chemielabo */
+.right-stack{display:flex;flex-direction:column;gap:24px;min-width:0}
+.sidebar-bonus{background:#15354a;color:white;border-radius:14px;padding:16px;box-shadow:0 3px 10px #142c3b12}
+.sidebar-bonus-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sidebar-eyebrow{margin:0 0 10px;color:#68d3e4;font-size:11px;letter-spacing:.12em;font-weight:900}
+.sidebar-bonus h2{margin:0;display:flex;align-items:center;gap:9px;color:#fff;font-size:18px}
+.sidebar-icon{display:inline-grid;place-items:center;width:45px;height:45px;background:#254f65;border-radius:8px;font-size:26px}
+.sidebar-wallet{background:#f8ca69;color:#3a2b12;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;align-items:center;line-height:1.15;min-width:76px;font-size:12px;font-weight:900}
+.sidebar-wallet strong{font-size:21px}.sidebar-wallet small{font-size:9px;letter-spacing:.03em}
+.sidebar-bonus>p{font-size:13px;line-height:1.5}.sidebar-bonus .sidebar-disclaimer{font-size:11px;color:#d6e9f0;margin-bottom:0}
+.sidebar-bonus .bonus-launcher{background:transparent;border:0;padding:0}
+.sidebar-bonus .bonus-toggle{display:none}
+.sidebar-bonus .bonus-menu{display:grid;gap:7px;padding:0}
+.sidebar-bonus .bonus-btn{background:#f6cb70;color:#322815;border:0;border-radius:10px;padding:13px 10px;text-align:center;font-weight:900;font-size:14px;box-shadow:inset 0 -3px #c9a254}
+.sidebar-bonus .bonus-btn:hover{background:#ffe09b;color:#332a1a}
+.sidebar-feature{position:relative;overflow:hidden;background:#f1f8f9;border:1px solid #b5d1d9;border-radius:15px;padding:16px;color:#173448}
+.sidebar-feature-header{position:relative;z-index:1;min-height:48px;display:flex;align-items:flex-start}
+.sidebar-feature-header h2{font-size:18px;margin:0;color:#173448}
+.sidebar-feature:before{content:'';position:absolute;right:0;top:0;width:45%;height:112px;opacity:.22;background-image:url('assets/card-art/einstein.webp');background-size:cover;background-position:center}
+.skin-feature .skin{position:relative;background:#eaf4f7;border:1px solid #d4e2e6;display:flex;align-items:center;gap:12px;text-align:left;padding:10px;border-radius:12px;min-height:80px}
+.skin-feature .skin .avatar{font-size:38px;flex:none}.skin-feature .skin img{width:55px;height:55px;object-fit:contain}.skin-feature .skin strong{font-size:13px;overflow-wrap:anywhere}
+.skin-feature .skin .fine{font-size:11px;color:#58778a}
+.sidebar-skin-label{margin-top:12px;background:#17374b;color:#fff;border:2px solid #b78d45;border-radius:10px;padding:13px;font-size:13px;font-weight:800}
+.arena-feature:before{background-image:url('assets/card-art/curie.webp')}
+.arena-tiles{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.arena-tile{position:relative;min-height:116px;border:2px solid #c69a50;border-radius:11px;overflow:hidden;display:flex;align-items:flex-end;padding:12px;color:white;text-decoration:none;background:#15364a}
+.arena-tile:before{content:'';position:absolute;inset:0;background-image:linear-gradient(0deg,#0b2435 5%,#0b2435a0 55%,#0b243540),var(--tile-image);background-size:cover;background-position:center;transition:transform .2s}
+.arena-tile:hover:before{transform:scale(1.07)}.arena-tile:focus-visible{outline:3px solid #1479ae;outline-offset:3px}
+.arena-tile span{position:relative;font-size:14px;font-weight:900;text-shadow:0 1px 4px #001b2b}
+.arena-tile-wide{grid-column:1/-1;min-height:90px}
+@media(max-width:1050px){.right-stack{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start}.right .bonus-btn{width:100%;margin:0}.right .skin{display:flex}}
+@media(max-width:760px){.right-stack{display:flex;flex-direction:column}.right-stack>section{width:100%}}
